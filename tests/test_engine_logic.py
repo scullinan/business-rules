@@ -1,10 +1,11 @@
 from business_rules import engine
-from business_rules.variables import BaseVariables
-from business_rules.operators import StringType
+from business_rules.variables import BaseVariables, rule_variable
+from business_rules.operators import BooleanType, NumericType, StringType
 from business_rules.actions import BaseActions
 
 from mock import patch, MagicMock
 from . import TestCase
+import json
 
 
 class EngineTests(TestCase):
@@ -193,3 +194,38 @@ class EngineTests(TestCase):
         err_string = "Action fakeone is not defined in class BaseActions"
         with self.assertRaisesRegexp(AssertionError, err_string):
             engine.do_actions(actions, BaseActions())
+
+
+    ###
+    ### Test variable expnmasion
+    ###
+
+    def test_expand_variable_values(self):
+        conditions = {'all': [
+                        {'value':{'var': 'replace_str'}}, 
+                        {'any': [
+                            {'value':{'var': 'replace_str'}}, 
+                            {'value':{'var': 'replace_int'}}]},
+                            {'value':{'var': 'replace_bool'}}]}
+
+        class SomeMoreVariables(BaseVariables):
+
+            @rule_variable(StringType)
+            def replace_str(self):
+                return "blah"
+
+            @rule_variable(NumericType)
+            def replace_int(self):
+                return 123
+
+            @rule_variable(BooleanType)
+            def replace_bool(self):
+                return False
+        
+        result = engine.expand_variable_values([conditions], SomeMoreVariables())
+        result_str = json.dumps(result)
+        self.assertRegexpMatches(result_str, "123", "replace_int was not replaced")
+        self.assertRegexpMatches(result_str, "false", "replace_bool was not replaced")
+        self.assertRegexpMatches(result_str, "blah", "replace_str was not replaced")
+        self.assertNotRegexpMatches(result_str, "var", "var was not removed")
+

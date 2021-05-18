@@ -4,7 +4,7 @@ def run_all(rule_list,
             defined_variables,
             defined_actions,
             stop_on_first_trigger=False):
-
+    
     rule_was_triggered = False
     for rule in rule_list:
         result = run(rule, defined_variables, defined_actions)
@@ -16,12 +16,30 @@ def run_all(rule_list,
 
 def run(rule, defined_variables, defined_actions):
     conditions, actions = rule['conditions'], rule['actions']
+
+    conditions = expand_variable_values(conditions, defined_variables)
+
     rule_triggered = check_conditions_recursively(conditions, defined_variables)
     if rule_triggered:
         do_actions(actions, defined_actions)
         return True
     return False
 
+def expand_variable_values(conditions, defined_variables):
+    def replace_var(adict):
+        if isinstance(adict, list):           
+            for item in adict:
+                replace_var(item)
+        elif isinstance(adict,dict):            
+            for key in adict.keys():              
+                if key == "value":
+                    if "var" in adict[key]:
+                        adict[key] = _get_variable_value_method(defined_variables, adict[key]["var"])()
+                else:
+                    replace_var(adict[key])
+
+    replace_var(conditions)
+    return conditions
 
 def check_conditions_recursively(conditions, defined_variables):
     keys = list(conditions.keys())
@@ -60,13 +78,16 @@ def _get_variable_value(defined_variables, name):
     specified type.
 
     Returns an instance of operators.BaseType
-    """
+    """    
+    method = _get_variable_value_method(defined_variables, name)
+    return method.field_type(method())
+
+def _get_variable_value_method(defined_variables, name):
     def fallback(*args, **kwargs):
         raise AssertionError("Variable {0} is not defined in class {1}".format(
                 name, defined_variables.__class__.__name__))
     method = getattr(defined_variables, name, fallback)
-    val = method()
-    return method.field_type(val)
+    return method
 
 def _do_operator_comparison(operator_type, operator_name, comparison_value):
     """ Finds the method on the given operator_type and compares it to the
