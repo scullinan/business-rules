@@ -124,7 +124,7 @@ class IntegrationTests(TestCase):
                            'label': 'True Bool',
                            'field_type': 'boolean',
                            'options': []}])
-
+        
         self.assertEqual(all_data.get("variable_type_operators"),
                          {'boolean': [{'input_type': 'none',
                              'label': 'Is False',
@@ -164,10 +164,11 @@ class IntegrationTests(TestCase):
                              'name': 'shares_no_elements_with'}],
                            'string': [{'input_type': 'text', 'label': 'Contains', 'name': 'contains'},
                             {'input_type': 'text', 'label': 'Ends With', 'name': 'ends_with'},
-                            {'input_type': 'text', 'label': 'Equal To', 'name': 'equal_to'},
+                            {'input_type': 'text', 'label': 'Equal To', 'name': 'equal_to'},                            
                             {'input_type': 'text',
                              'label': 'Equal To (case insensitive)',
                              'name': 'equal_to_case_insensitive'},
                             {'input_type': 'text', 'label': 'Matches Regex', 'name': 'matches_regex'},
                             {'input_type': 'none', 'label': 'Non Empty', 'name': 'non_empty'},
+                            {'input_type': 'text', 'label': 'Not Equal To', 'name': 'not_equal_to'},
                             {'input_type': 'text', 'label': 'Starts With', 'name': 'starts_with'}]})

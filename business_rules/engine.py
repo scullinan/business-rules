@@ -33,7 +33,7 @@ def expand_variable_values(conditions, defined_variables):
         elif isinstance(adict,dict):            
             for key in adict.keys():              
                 if key == "value":
-                    if "var" in adict[key]:
+                    if isinstance(adict[key], dict) and "var" in adict[key]:
                         adict[key] = _get_variable_value_method(defined_variables, adict[key]["var"])()
                 else:
                     replace_var(adict[key])
@@ -80,7 +80,11 @@ def _get_variable_value(defined_variables, name):
     Returns an instance of operators.BaseType
     """    
     method = _get_variable_value_method(defined_variables, name)
-    return method.field_type(method())
+    try:
+        return method.field_type(method())
+    except:
+        raise AssertionError("Variable {0} is not defined in class {1}".format(
+                name, defined_variables.__class__.__name__))
 
 def _get_variable_value_method(defined_variables, name):
     def fallback(*args, **kwargs):
