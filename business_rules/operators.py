@@ -102,30 +102,39 @@ class StringType(BaseType):
 
 @export_type
 class NumericType(BaseType):
-    EPSILON = Decimal('0.000001')
+    EPSILON = float('0.000001')
 
     name = "numeric"
 
     @staticmethod
     def _assert_valid_value_and_cast(value):
-        if isinstance(value, float):
-            # In python 2.6, casting float to Decimal doesn't work
-            return float_to_decimal(value)
-        if isinstance(value, integer_types):
-            return Decimal(value)
-        if isinstance(value, Decimal):
+        if isinstance(value, float):            
             return value
+        if isinstance(value, integer_types):
+            return float(value)
+        if isinstance(value, Decimal):
+            return float(value)
+        if isinstance(value, tuple):
+            l = list(value)
+            for i in range(0, len(l)-1): l[i] = NumericType._assert_valid_value_and_cast(l[i])
+            return tuple(l)
         else:
             raise AssertionError("{0} is not a valid numeric type.".
                                  format(value))
 
+    def use_first_if_tuple(self, value):
+        if isinstance(value, tuple): 
+            return value[0] 
+        else:
+            return value
+
     @type_operator(FIELD_NUMERIC)
-    def equal_to(self, other_numeric):
-        return abs(self.value - other_numeric) <= self.EPSILON
+    def equal_to(self, other_numeric):              
+        return abs(self.use_first_if_tuple(self.value) - other_numeric) <= self.EPSILON
 
     @type_operator(FIELD_NUMERIC)
     def greater_than(self, other_numeric):
-        return (self.value - other_numeric) > self.EPSILON
+        return (self.use_first_if_tuple(self.value) - other_numeric) > self.EPSILON
 
     @type_operator(FIELD_NUMERIC)
     def greater_than_or_equal_to(self, other_numeric):
@@ -133,12 +142,46 @@ class NumericType(BaseType):
 
     @type_operator(FIELD_NUMERIC)
     def less_than(self, other_numeric):
-        return (other_numeric - self.value) > self.EPSILON
+        return (other_numeric - self.use_first_if_tuple(self.value)) > self.EPSILON
 
     @type_operator(FIELD_NUMERIC)
     def less_than_or_equal_to(self, other_numeric):
         return self.less_than(other_numeric) or self.equal_to(other_numeric)
 
+    @type_operator(FIELD_NUMERIC)
+    def difference_greater_than(self, other_numeric):
+        if not isinstance(self.value, tuple):
+            raise AssertionError("{0} is not a tuple which is required for comparison.".
+                                format(self.value))
+        if len(self.value) < 2:
+            raise AssertionError("{0} less than 2 items required for comparison.".
+                                format(self.value))
+        return abs(self.value[0]-self.value[1]) > other_numeric  
+   
+    @type_operator(FIELD_NUMERIC)
+    def difference_less_than(self, other_numeric):
+        if not isinstance(self.value, tuple):
+            raise AssertionError("{0} is not a tuple which is required for comparison.".
+                                format(self.value))
+        if len(self.value) < 2:
+            raise AssertionError("{0} less than 2 items required for comparison.".
+                                format(self.value))
+        return abs(self.value[0]-self.value[1]) < other_numeric    
+   
+    @type_operator(FIELD_NUMERIC)
+    def difference_greater_than_percent(self, other_numeric):
+        if not isinstance(self.value, tuple) and len(self.value) > 1:
+            raise AssertionError("{0} is not a tuple or has less than 2 items required for comparison.".
+                                format(self.value))
+        return abs(self.value[0] / self.value[1] *100) > other_numeric
+    
+    @type_operator(FIELD_NUMERIC)
+    def difference_less_than_percent(self, other_numeric):
+        if not isinstance(self.value, tuple) and len(self.value) > 1:
+            raise AssertionError("{0} is not a tuple or has less than 2 items required for comparison.".
+                                format(self.value))
+        return abs(self.value[0] / self.value[1] *100) < other_numeric
+        
 
 @export_type
 class BooleanType(BaseType):

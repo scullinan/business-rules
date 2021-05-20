@@ -72,7 +72,7 @@ class RuleVariableTests(TestCase):
 
     ###
     ### rule_variable wrappers for each variable type
-    ###
+    ###        
 
     def test_numeric_rule_variable(self):
 

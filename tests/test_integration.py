@@ -23,7 +23,11 @@ class SomeVariables(BaseVariables):
     @numeric_rule_variable(context_options=range(0,100))
     def series_of_values_indexed_by_minute(self, context):
         series = range(0,100)       
-        return series[int(context)]   
+        return series[int(context)]  
+
+    @numeric_rule_variable
+    def returns_tuple(self):
+        return 10, 20 
 
 class SomeActions(BaseActions):
 
@@ -63,6 +67,12 @@ class IntegrationTests(TestCase):
         }
         res = check_condition(condition, SomeVariables())
         self.assertFalse(res)
+
+    def test_check_numeric_rule_works_with_tuples(self):
+        condition = {'name': 'returns_tuple',
+                     'operator': 'equal_to',
+                     'value': 10}        
+        self.assertTrue(check_condition(condition, SomeVariables()))
 
     def test_check_true_condition_happy_path_with_context(self):
         condition = {'name': 'series_of_values_indexed_by_minute',
@@ -136,6 +146,10 @@ class IntegrationTests(TestCase):
                            "field_type": "string",
                            "options": []},
                            {'field_type': 'numeric',
+                            'label': 'Returns Tuple',
+                            'name': 'returns_tuple',
+                            'options': []},
+                           {'field_type': 'numeric',
                             'label': 'Series Of Values Indexed By Minute',
                             'name': 'series_of_values_indexed_by_minute',
                             'options': []},
@@ -146,7 +160,7 @@ class IntegrationTests(TestCase):
                           {'name': 'true_bool',
                            'label': 'True Bool',
                            'field_type': 'boolean',
-                           'options': []}])
+                           'options': []}])  
         
         self.assertEqual(all_data.get("variable_type_operators"),
                          {'boolean': [{'input_type': 'none',
@@ -155,13 +169,18 @@ class IntegrationTests(TestCase):
                             {'input_type': 'none',
                              'label': 'Is True',
                              'name': 'is_true'}],
-                           'numeric': [{'input_type': 'numeric',
+                           'numeric': [
+                            {'name': 'difference_greater_than', 'label': 'Difference Greater Than', 'input_type': 'numeric'}, 
+                            {'name': 'difference_greater_than_percent', 'label': 'Difference Greater Than Percent', 'input_type': 'numeric'}, 
+                            {'name': 'difference_less_than', 'label': 'Difference Less Than', 'input_type': 'numeric'}, 
+                            {'name': 'difference_less_than_percent', 'label': 'Difference Less Than Percent', 'input_type': 'numeric'},
+                            {'input_type': 'numeric',
                              'label': 'Equal To',
                              'name': 'equal_to'},
                             {'input_type': 'numeric', 'label': 'Greater Than', 'name': 'greater_than'},
                             {'input_type': 'numeric',
                              'label': 'Greater Than Or Equal To',
-                             'name': 'greater_than_or_equal_to'},
+                             'name': 'greater_than_or_equal_to'},                            
                             {'input_type': 'numeric', 'label': 'Less Than', 'name': 'less_than'},
                             {'input_type': 'numeric',
                              'label': 'Less Than Or Equal To',

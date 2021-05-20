@@ -58,7 +58,7 @@ class NumericOperatorTests(TestCase):
         with self.assertRaisesRegexp(AssertionError, err_string):
             NumericType("foo")
 
-    def test_numeric_type_validates_and_casts_decimal(self):
+    def test_numeric_type_validates_and_casts_float(self):
         ten_dec = Decimal(10)
         ten_int = 10
         ten_float = 10.0
@@ -70,10 +70,10 @@ class NumericOperatorTests(TestCase):
         ten_var_int = NumericType(ten_int)
         ten_var_float = NumericType(ten_float)
         ten_var_long = NumericType(ten_long)
-        self.assertTrue(isinstance(ten_var_dec.value, Decimal))
-        self.assertTrue(isinstance(ten_var_int.value, Decimal))
-        self.assertTrue(isinstance(ten_var_float.value, Decimal))
-        self.assertTrue(isinstance(ten_var_long.value, Decimal))
+        self.assertTrue(isinstance(ten_var_dec.value, float))
+        self.assertTrue(isinstance(ten_var_int.value, float))
+        self.assertTrue(isinstance(ten_var_float.value, float))
+        self.assertTrue(isinstance(ten_var_long.value, float))
 
     def test_numeric_equal_to(self):
         self.assertTrue(NumericType(10).equal_to(10))
@@ -119,6 +119,26 @@ class NumericOperatorTests(TestCase):
         self.assertTrue(NumericType(10).less_than_or_equal_to(10.000001))
         self.assertTrue(NumericType(10).less_than_or_equal_to(10.000002))
         self.assertTrue(NumericType(10).less_than_or_equal_to(10))
+
+    def test_numeric_difference_greater_than(self):
+        self.assertTrue(NumericType((3,1)).difference_greater_than(1))
+        self.assertFalse(NumericType((3,1)).difference_greater_than(2))
+        self.assertFalse(NumericType((1,3)).difference_greater_than(2))
+        self.assertTrue(NumericType((3.2,1.1)).difference_greater_than(1.1))
+        self.assertTrue(NumericType((3.00003,3.00001)).difference_greater_than(0.00001))
+        self.assertTrue(NumericType((10,5)).difference_greater_than(3.000002))
+        with self.assertRaises(AssertionError):
+            self.assertTrue(NumericType(10).difference_greater_than(10))
+    
+    def test_numeric_difference_less_than(self):
+        self.assertTrue(NumericType((1,3)).difference_less_than(3))
+        self.assertFalse(NumericType((1,3)).difference_less_than(2))
+        self.assertFalse(NumericType((3,1)).difference_less_than(1))
+        self.assertTrue(NumericType((1.1,3.2)).difference_less_than(2.2))
+        self.assertTrue(NumericType((3.00001,3.00003)).difference_less_than(0.00003))
+        self.assertTrue(NumericType((5,10)).difference_less_than(5.000002))
+        with self.assertRaises(AssertionError):
+            self.assertTrue(NumericType(10).difference_less_than(10))
 
 
 class BooleanOperatorTests(TestCase):
