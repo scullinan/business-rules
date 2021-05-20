@@ -33,8 +33,9 @@ def expand_variable_values(conditions, defined_variables):
         elif isinstance(adict,dict):            
             for key in adict.keys():              
                 if key == "value":
-                    if isinstance(adict[key], dict) and "var" in adict[key]:
-                        adict[key] = _get_variable_value_method(defined_variables, adict[key]["var"])()
+                    if isinstance(adict[key], dict):
+                        if "var" in adict[key]:
+                            adict[key] = _get_variable_value_method(defined_variables, adict[key]["var"])()                        
                 else:
                     replace_var(adict[key])
 
@@ -68,11 +69,14 @@ def check_condition(condition, defined_variables):
     variables, values, and the comparison operator. The defined_variables
     object must have a variable defined for any variables in this condition.
     """
+    context = None
     name, op, value = condition['name'], condition['operator'], condition['value']
-    operator_type = _get_variable_value(defined_variables, name)
+    if 'context' in condition: context = condition['context']
+
+    operator_type = _get_variable_value(defined_variables, name, context)
     return _do_operator_comparison(operator_type, op, value)
 
-def _get_variable_value(defined_variables, name):
+def _get_variable_value(defined_variables, name, time_period=None):
     """ Call the function provided on the defined_variables object with the
     given name (raise exception if that doesn't exist) and casts it to the
     specified type.
@@ -81,6 +85,8 @@ def _get_variable_value(defined_variables, name):
     """    
     method = _get_variable_value_method(defined_variables, name)
     try:
+        if time_period is not None: 
+            return method.field_type(method(time_period))
         return method.field_type(method())
     except:
         raise AssertionError("Variable {0} is not defined in class {1}".format(

@@ -22,7 +22,7 @@ class BaseVariables(object):
                 } for m in methods if getattr(m[1], 'is_rule_variable', False)]
 
 
-def rule_variable(field_type, label=None, options=None):
+def rule_variable(field_type, label=None, options=None, context_options=None):
     """ Decorator to make a function into a rule variable
     """
     options = options or []
@@ -35,18 +35,19 @@ def rule_variable(field_type, label=None, options=None):
         func.label = label \
                 or fn_name_to_pretty_label(func.__name__)
         func.options = options
+        func.context_options = context_options
         return func
     return wrapper
 
 
-def _rule_variable_wrapper(field_type, label):
+def _rule_variable_wrapper(field_type, label, context_options=None):
     if callable(label):
         # Decorator is being called with no args, label is actually the decorated func
-        return rule_variable(field_type)(label)
-    return rule_variable(field_type, label=label)
+        return rule_variable(field_type, context_options=context_options)(label)
+    return rule_variable(field_type, label=label, context_options=context_options)
 
-def numeric_rule_variable(label=None):
-    return _rule_variable_wrapper(NumericType, label)
+def numeric_rule_variable(label=None, context_options=None):
+    return _rule_variable_wrapper(NumericType, label, context_options)
 
 def string_rule_variable(label=None):
     return _rule_variable_wrapper(StringType, label)

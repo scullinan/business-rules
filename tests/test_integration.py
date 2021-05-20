@@ -20,6 +20,11 @@ class SomeVariables(BaseVariables):
     def true_bool(self):
         return True
 
+    @numeric_rule_variable(context_options=range(0,100))
+    def series_of_values_indexed_by_minute(self, context):
+        series = range(0,100)       
+        return series[int(context)]   
+
 class SomeActions(BaseActions):
 
     @rule_action(params={"foo": FIELD_NUMERIC})
@@ -58,6 +63,20 @@ class IntegrationTests(TestCase):
         }
         res = check_condition(condition, SomeVariables())
         self.assertFalse(res)
+
+    def test_check_true_condition_happy_path_with_context(self):
+        condition = {'name': 'series_of_values_indexed_by_minute',
+                     'operator': 'equal_to',
+                     'value': 10,
+                     'context' : 10}        
+        self.assertTrue(check_condition(condition, SomeVariables()))
+
+    def test_check_false_condition_happy_path_with_context(self):
+        condition = {'name': 'series_of_values_indexed_by_minute',
+                     'operator': 'equal_to',
+                     'value': 1,
+                     'context' : 10}
+        self.assertFalse(check_condition(condition, SomeVariables()))
 
     def test_check_true_condition_happy_path(self):
         condition = {'name': 'foo',
@@ -116,6 +135,10 @@ class IntegrationTests(TestCase):
                            "label": "Foo",
                            "field_type": "string",
                            "options": []},
+                           {'field_type': 'numeric',
+                            'label': 'Series Of Values Indexed By Minute',
+                            'name': 'series_of_values_indexed_by_minute',
+                            'options': []},
                           {"name": "ten",
                            "label": "Diez",
                            "field_type": "numeric",

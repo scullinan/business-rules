@@ -41,6 +41,24 @@ class RuleVariableTests(TestCase):
         self.assertEqual(func.label, 'Foo Name')
         self.assertEqual(func.field_type, StringType)
         self.assertEqual(func.options, ['op1', 'op2'])
+    
+    def test_rule_variable_decorator_passes_context_if_supported(self):
+        """ Make sure that the expected attributes are attached to a function
+        by the variable decorators.
+        """
+        def some_test_function_supporting_context(self, context): 
+            self.assertNotNone(context)
+        
+        def some_test_function_not_supporting_context(self): 
+            pass
+
+        wrapper_true = rule_variable(StringType, 'Foo Name', options=['op1', 'op2'], context_options=[0])
+        func = wrapper_true(some_test_function_supporting_context)        
+        self.assertEqual(func.context_options, [0])
+
+        wrapper_false = rule_variable(StringType, 'Foo Name', options=['op1', 'op2'], context_options=None)
+        func = wrapper_false(some_test_function_not_supporting_context)        
+        self.assertIsNone(func.context_options)
 
     def test_rule_variable_works_as_decorator(self):
         @rule_variable(StringType, 'Blah')
@@ -58,12 +76,13 @@ class RuleVariableTests(TestCase):
 
     def test_numeric_rule_variable(self):
 
-        @numeric_rule_variable('My Label')
+        @numeric_rule_variable('My Label', context_options=[0])
         def numeric_var(): pass
 
         self.assertTrue(getattr(numeric_var, 'is_rule_variable'))
         self.assertEqual(getattr(numeric_var, 'field_type'), NumericType)
         self.assertEqual(getattr(numeric_var, 'label'), 'My Label')
+        self.assertEqual(getattr(numeric_var, 'context_options'), [0])
 
     def test_numeric_rule_variable_no_parens(self):
 
