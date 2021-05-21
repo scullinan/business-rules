@@ -155,8 +155,9 @@ class NumericType(BaseType):
                                 format(self.value))
         if len(self.value) < 2:
             raise AssertionError("{0} less than 2 items required for comparison.".
-                                format(self.value))
-        return abs(self.value[0]-self.value[1]) > other_numeric  
+                                format(self.value)) 
+
+        return self.value[0]-self.value[1] > other_numeric  
    
     @type_operator(FIELD_NUMERIC)
     def difference_less_than(self, other_numeric):
@@ -166,22 +167,23 @@ class NumericType(BaseType):
         if len(self.value) < 2:
             raise AssertionError("{0} less than 2 items required for comparison.".
                                 format(self.value))
-        return abs(self.value[0]-self.value[1]) < other_numeric    
+        return self.value[0]-self.value[1] < other_numeric    
    
     @type_operator(FIELD_NUMERIC)
     def difference_greater_than_percent(self, other_numeric):
         if not isinstance(self.value, tuple) and len(self.value) > 1:
             raise AssertionError("{0} is not a tuple or has less than 2 items required for comparison.".
                                 format(self.value))
-        return abs(self.value[0] / self.value[1] *100) > other_numeric
+        diff = self.value[0] - self.value[1]
+        return (diff / self.value[1] * 100) > other_numeric        
     
     @type_operator(FIELD_NUMERIC)
     def difference_less_than_percent(self, other_numeric):
         if not isinstance(self.value, tuple) and len(self.value) > 1:
             raise AssertionError("{0} is not a tuple or has less than 2 items required for comparison.".
                                 format(self.value))
-        return abs(self.value[0] / self.value[1] *100) < other_numeric
-        
+        diff = self.value[0] - self.value[1]
+        return (diff / self.value[1] * 100) < other_numeric       
 
 @export_type
 class BooleanType(BaseType):

@@ -121,22 +121,40 @@ class NumericOperatorTests(TestCase):
         self.assertTrue(NumericType(10).less_than_or_equal_to(10))
 
     def test_numeric_difference_greater_than(self):
-        self.assertTrue(NumericType((3,1)).difference_greater_than(1))
-        self.assertFalse(NumericType((3,1)).difference_greater_than(2))
-        self.assertFalse(NumericType((1,3)).difference_greater_than(2))
-        self.assertTrue(NumericType((3.2,1.1)).difference_greater_than(1.1))
-        self.assertTrue(NumericType((3.00003,3.00001)).difference_greater_than(0.00001))
-        self.assertTrue(NumericType((10,5)).difference_greater_than(3.000002))
+        self.assertTrue(NumericType((3, 1)).difference_greater_than(1))
+        self.assertFalse(NumericType((3, 1)).difference_greater_than(2))
+        self.assertFalse(NumericType((1, 3)).difference_greater_than(2))
+        self.assertTrue(NumericType((3.2, 1.1)).difference_greater_than(1.1))
+        self.assertTrue(NumericType((3.00003, 3.00001)).difference_greater_than(0.00001))
+        self.assertTrue(NumericType((10, 5)).difference_greater_than(3.000002))
         with self.assertRaises(AssertionError):
             self.assertTrue(NumericType(10).difference_greater_than(10))
     
     def test_numeric_difference_less_than(self):
-        self.assertTrue(NumericType((1,3)).difference_less_than(3))
-        self.assertFalse(NumericType((1,3)).difference_less_than(2))
-        self.assertFalse(NumericType((3,1)).difference_less_than(1))
-        self.assertTrue(NumericType((1.1,3.2)).difference_less_than(2.2))
-        self.assertTrue(NumericType((3.00001,3.00003)).difference_less_than(0.00003))
-        self.assertTrue(NumericType((5,10)).difference_less_than(5.000002))
+        self.assertTrue(NumericType((1, 3)).difference_less_than(3))
+        self.assertFalse(NumericType((1, 3)).difference_less_than(-2))
+        self.assertFalse(NumericType((3, 1)).difference_less_than(1))
+        self.assertTrue(NumericType((1.1, 3.2)).difference_less_than(-2))
+        self.assertTrue(NumericType((3.00001, 3.00003)).difference_less_than(0.00003))
+        self.assertTrue(NumericType((5, 10)).difference_less_than(-4.99))
+        with self.assertRaises(AssertionError):
+            self.assertTrue(NumericType(10).difference_less_than(10))
+
+    def test_numeric_difference_greater_than_percent(self):
+        self.assertTrue(NumericType((10, 5)).difference_greater_than_percent(99))
+        self.assertFalse(NumericType((10, 5)).difference_greater_than_percent(101))
+        self.assertFalse(NumericType((10, 5)).difference_greater_than_percent(100))        
+        self.assertTrue(NumericType((5, 10)).difference_greater_than_percent(-51))
+        self.assertTrue(NumericType((5, 5)).difference_greater_than_percent(-1))     
+        with self.assertRaises(AssertionError):
+            self.assertTrue(NumericType(10).difference_less_than(10))   
+
+    def test_numeric_difference_less_than_percent(self):       
+        self.assertTrue(NumericType((10, 5)).difference_less_than_percent(101))
+        self.assertFalse(NumericType((10, 5)).difference_less_than_percent(99))
+        self.assertFalse(NumericType((10, 5)).difference_less_than_percent(100))        
+        self.assertTrue(NumericType((5, 10)).difference_less_than_percent(-49))
+        self.assertTrue(NumericType((5, 5)).difference_less_than_percent(1)) 
         with self.assertRaises(AssertionError):
             self.assertTrue(NumericType(10).difference_less_than(10))
 
